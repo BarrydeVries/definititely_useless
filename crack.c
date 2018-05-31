@@ -4,10 +4,9 @@
  * CS50
  * Barry de Vries
  *
- * De functie vind bij een gehashed wachtwoord het oorspronkelijke wachtwoord,
- * voor wachtwoorden van lengte vier. Bij foute input zal main een 1 als output
- * geven, bij succes een 0 en wanneer het script onsuccesvol is in het kraken
- * van de input, is de output van main een 2.
+ * A basic implementation of a function to crack hashed passwords of lenghts up
+ * to 4 characters. When wrong input is given the function returns a 1, if the
+ * algorithm is unalbe to find the origional password, 2 will be returned.
  ******************************************************************************/
 #define _XOPEN_SOURCE
 #include <unistd.h>
@@ -18,18 +17,20 @@
 long long power(int k, int n);
 int kraken(string hashedww);
 
-// hier wordt de maximale lengte van het te kraken wachtwoord gedefinieerd
+// Defines the max lenght of the password to crack
 int maxlengteww = 4;
 
 int main(int argc, string argv[])
+/* Check the input, then start craking.*/
 {
-    // checken of er precies één hashed wachtwoord wordt meegegeven
+    
     if (argc != 2)
     {
-        printf("Uw input heeft het verkeerde formaat.\n");
+        // return error for wrong input
+        printf("Wrong input.\n");
         return 1;
     }
-    // beginnen met het kraken
+
     else
     {
         return kraken(argv[1]);
@@ -37,8 +38,8 @@ int main(int argc, string argv[])
 }
 
 /**
- * De functie bepaald eerst de salt waarde, waarna voor iedere mogelijke lengte
- * alle mogelijke wachtwoorden wordt gegenereerd en geverifieerd.
+ * Determine the salt value, then try passwords of all possible sizes.
+ * Note that we use integers to represent our passwords.
 */
 int kraken(string hashedww)
 {
@@ -46,22 +47,20 @@ int kraken(string hashedww)
     saltwaarde[0] = hashedww[0];
     saltwaarde[1] = hashedww[1];
 
-    // loop over de lengte van het wachtwoord
+    // Try different lengths.
     for (int lengteww = 1; lengteww <= maxlengteww; lengteww++)
     {
-        // hierin worden de poging gecreëerd
+        // create an array for the password, keep the \0 in mind!
         char wwpoging[lengteww + 1];
         wwpoging[lengteww] = '\0';
 
-        // deze loop loopt over alle mogelijke wachtwoorden van de geven lengte
+        // Loop over all possible passwords
         for (long long wwgenerator = 0; wwgenerator < power(52, lengteww);
              wwgenerator++)
         {
             long long k = wwgenerator;
 
-            // we passen de poging array aan voor de volgende poging op basis
-            // van de waarde van de wwgenerator modulo machten van 52, het
-            // aantal kleine, en hoofdletters
+            // By taking the modulo of powers of 52 of the wwgenerator, passwords are created.
             for (int wwkarakter = 0; wwkarakter < lengteww; wwkarakter++)
             {
                 if ((k % 52) < 26)
@@ -77,7 +76,7 @@ int kraken(string hashedww)
                 k = k / 52;
             }
 
-            // de check of het wachtwoord correct is
+            // Check for correctness.
             if (!strcmp(crypt(wwpoging, saltwaarde), hashedww))
             {
                 printf("%s\n", wwpoging);
@@ -85,12 +84,13 @@ int kraken(string hashedww)
             }
         }
     }
+    // Return a failure error.
     printf("Het wachtwoord kon niet gekraakt worden.\n");
     return 2;
 }
 
 /**
- * Een power functie.
+ * A power function for with long long output.
 */
 long long power(int k, int n)
 {
